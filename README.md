@@ -1,4 +1,4 @@
-# Scientific Calculator
+# Advance Calculator
 
 A modern, feature-rich scientific calculator built with HTML, CSS, and JavaScript. This calculator offers a sleek interface with multiple themes, comprehensive scientific functions, and an intuitive user experience.
 
