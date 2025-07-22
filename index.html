@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-bg: #ffffff;
+            --secondary-bg: #f8f9fa;
+            --accent-color: #0066cc;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --display-bg: #f0f0f0;
+            --display-text: #000000;
+            --button-shadow: rgba(0,0,0,0.1);
+            --hover-shadow: rgba(0,0,0,0.2);
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --body-bg: linear-gradient(135deg, #c1c1c4 0%, #5b5a5d 100%);
+        }
+
+        [data-theme="dark"] {
+            --primary-bg: #272727;
+            --secondary-bg: #1a1a1a;
+            --accent-color: #ffffff;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --display-bg: #0d0d0d;
+            --display-text: #ffffff;
+            --button-shadow: rgba(255,255,255,0.1);
+            --hover-shadow: rgba(255,255,255,0.2);
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --body-bg: linear-gradient(135deg, #232526 0%, #414345 100%);
+        }
+
+        [data-theme="gray"] {
+            --primary-bg: #808080;
+            --secondary-bg: #2f2f2f;
+            --accent-color: #ffffff;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --display-bg: #404040;
+            --display-text: #ffffff;
+            --button-shadow: rgba(0,0,0,0.3);
+            --hover-shadow: rgba(0,0,0,0.4);
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --body-bg: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%);
+        }
+
+        * {
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background: var(--body-bg);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-primary);
+            zoom: 1;
+        }
+
+        /* Sticky Control Panel - Upper Right */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            background: var(--secondary-bg);
+            color: var(--accent-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px var(--button-shadow);
+        }
+
+        .control-btn:hover {
+            background: var(--accent-color);
+            color: var(--primary-bg);
+            transform: scale(1.1);
+        }
+
+        /* Notification Toast - Left Side */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1055;
+        }
+
+        .toast {
+            background: var(--primary-bg);
+            border: 1px solid var(--secondary-bg);
+            color: var(--text-primary);
+            box-shadow: 0 4px 12px var(--button-shadow);
+        }
+
+
+        .calculator-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2.5rem;
+            background: var(--primary-bg);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px var(--button-shadow);
+            border: 2px solid var(--secondary-bg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .display {
+            background: var(--display-bg);
+            border: 3px solid var(--secondary-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            min-height: 140px;
+            position: relative;
+            box-shadow: inset 0 4px 8px var(--button-shadow);
+        }
+
+        .display-main {
+            color: var(--display-text);
+            font-size: 2.8rem;
+            font-weight: 300;
+            text-align: right;
+            word-break: break-all;
+            min-height: 60px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .display-history {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            text-align: right;
+            margin-bottom: 0.5rem;
+            min-height: 25px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .calculator-btn {
+            height: 65px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: 2px solid var(--secondary-bg);
+            border-radius: 12px;
+            margin: 4px;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 12px var(--button-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calculator-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px var(--hover-shadow);
+        }
+
+        .calculator-btn:active {
+            transform: translateY(1px) scale(0.98);
+            box-shadow: 0 3px 6px var(--button-shadow);
+        }
+
+        .btn-number {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+            border-color: var(--secondary-bg);
+        }
+
+        .btn-operator {
+            background: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+        }
+
+        .btn-function {
+            background: var(--accent-color);
+            color: var(--primary-bg);
+            border-color: var(--accent-color);
+            font-size: 1rem;
+        }
+
+        .btn-clear {
+            background: var(--warning-color);
+            color: var(--primary-bg);
+            border-color: var(--warning-color);
+        }
+
+        .btn-equals {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .btn-history {
+            background: var(--accent-color);
+            color: var(--primary-bg);
+            border-color: var(--accent-color);
+        }
+
+        .calculator-title {
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+        }
+
+        .mode-indicator {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            background: var(--secondary-bg);
+            border-radius: 20px;
+            border: 1px solid var(--accent-color);
+        }
+
+        .error-indicator {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: var(--error-color);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .error-indicator.show {
+            opacity: 1;
+        }
+
+        /* History Modal Styles */
+        .modal-content {
+            background: var(--primary-bg);
+            border: 2px solid var(--secondary-bg);
+            border-radius: 15px;
+            color: var(--text-primary);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--secondary-bg);
+        }
+
+        .modal-title {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            color: var(--text-secondary);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: var(--secondary-bg);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            background: var(--accent-color);
+            color: var(--primary-bg);
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        [data-theme="dark"] .btn-close {
+            filter: invert(0);
+        }
+
+        .shortcut-key {
+            background: var(--secondary-bg);
+            color: var(--accent-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin: 0 2px;
+        }
+
+        .calculator-btn.pressed {
+            animation: buttonPress 0.15s ease;
+        }
+
+        @keyframes buttonPress {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 576px) {
+            .calculator-container {
+                margin: 1rem;
+                padding: 1.5rem;
+                max-width: none;
+            }
+            
+            .calculator-btn {
+                height: 55px;
+                font-size: 1rem;
+                margin: 2px;
+            }
+            
+            .display-main {
+                font-size: 2.2rem;
+            }
+
+            .control-panel {
+                top: 10px;
+                right: 10px;
+            }
+
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        .zoom-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .zoom-level {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            text-align: center;
+            min-width: 50px;
+        }
+    </style>
+</head>
+<body data-theme="white">
+    <div class="container-fluid">
+        <!-- Toast Container - Left Side -->
+        <div class="toast-container">
+            <div class="toast" id="notificationToast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto">Calculator</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body" id="toastMessage">
+                    Message
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel - Upper Right Sticky -->
+        <div class="control-panel">
+            <button class="control-btn" onclick="themeManager.cycleTheme()" title="Switch Theme">
+                <i class="fas fa-palette"></i>
+            </button>
+            <button class="control-btn" onclick="showHelpModal()" title="Help & Shortcuts">
+                <i class="fas fa-question"></i>
+            </button>
+            <button class="control-btn" onclick="showHistoryModal()" title="Calculation History">
+                <i class="fas fa-history"></i>
+            </button>
+            <div class="zoom-controls">
+                <button class="control-btn" onclick="zoomManager.zoomIn()" title="Zoom In">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <div class="zoom-level" id="zoomLevel">100%</div>
+                <button class="control-btn" onclick="zoomManager.zoomOut()" title="Zoom Out">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="calculator-container">
+            <h1 class="calculator-title">
+                <i class="fas fa-calculator me-2"></i>
+                SCIENTIFIC 
+            </h1>
+            
+            <div class="display">
+                <div class="mode-indicator" id="modeIndicator">DEG</div>
+                <div class="error-indicator" id="errorIndicator">
+                    <i class="fas fa-exclamation-triangle"></i> ERROR
+                </div>
+                <div class="display-history" id="displayHistory"></div>
+                <div class="display-main" id="displayMain">0</div>
+            </div>
+
+            <div class="row g-1">
+                <!-- Row 1: Memory and Advanced Functions -->
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('2nd')" title="Second Functions">2nd</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('deg')" title="Toggle DEG/RAD">DEG</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('sin')" title="Sine">sin</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('cos')" title="Cosine">cos</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('tan')" title="Tangent">tan</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('ln')" title="Natural Logarithm">ln</button>
+                </div>
+
+                <!-- Row 2: Advanced Functions -->
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('(')" title="Open Parenthesis">(</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function(')')" title="Close Parenthesis">)</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('log')" title="Base 10 Logarithm">log</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('exp')" title="Exponential (e^x)">exp</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('^')" title="Power">x^y</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('sqrt')" title="Square Root">√</button>
+                </div>
+
+                <!-- Row 3: Clear and Basic Operations -->
+                <div class="col-2">
+                    <button class="btn btn-clear calculator-btn w-100" onclick="calculator.clearAll()" title="All Clear">AC</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-clear calculator-btn w-100" onclick="calculator.clearEntry()" title="Clear Entry">CE</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('abs')" title="Absolute Value">|x|</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('pi')" title="Pi">π</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('e')" title="Euler's Number">e</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-operator calculator-btn w-100" onclick="calculator.operator('÷')" title="Divide">÷</button>
+                </div>
+
+                <!-- Row 4: Numbers and Operations -->
+                <div class="col-2">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('7')">7</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('8')">8</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('9')">9</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('!')" title="Factorial">x!</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('1/x')" title="Reciprocal">1/x</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-operator calculator-btn w-100" onclick="calculator.operator('×')" title="Multiply">×</button>
+                </div>
+
+                <!-- Row 5: Numbers and Operations -->
+                <div class="col-2">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('4')">4</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('5')">5</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('6')">6</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('x2')" title="Square">x²</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('x3')" title="Cube">x³</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-operator calculator-btn w-100" onclick="calculator.operator('-')" title="Subtract">-</button>
+                </div>
+
+                <!-- Row 6: Numbers and Operations -->
+                <div class="col-2">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('1')">1</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('2')">2</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('3')">3</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('10^x')" title="10 to the power of x">10^x</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('%')" title="Percentage">%</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-operator calculator-btn w-100" onclick="calculator.operator('+')" title="Add">+</button>
+                </div>
+
+                <!-- Row 7: Zero, Decimal, and Equals -->
+                <div class="col-4">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('0')">0</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-number calculator-btn w-100" onclick="calculator.inputNumber('.')">.</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-function calculator-btn w-100" onclick="calculator.function('+/-')" title="Change Sign">+/-</button>
+                </div>
+                <div class="col-4">
+                    <button class="btn btn-equals calculator-btn w-100" onclick="calculator.calculate()" title="Equals">=</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal fade" id="historyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-history me-2"></i>
+                        Calculation History
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="historyList">
+                        <p class="text-muted">No calculations yet...</p>
+                    </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="calculator.clearHistory()">
+                            <i class="fas fa-trash me-1"></i>Clear History
+                        </button>
+                        <span class="text-muted small" id="historyCount">0 calculations</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-keyboard me-2"></i>
+                        Calculator Help & Shortcuts
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-keyboard me-2"></i>Keyboard Shortcuts</h6>
+                            <ul class="list-unstyled">
+                                <li><span class="shortcut-key">0-9</span> Number input</li>
+                                <li><span class="shortcut-key">.</span> Decimal point</li>
+                                <li><span class="shortcut-key">+</span> Addition</li>
+                                <li><span class="shortcut-key">-</span> Subtraction</li>
+                                <li><span class="shortcut-key">*</span> Multiplication</li>
+                                <li><span class="shortcut-key">/</span> Division</li>
+                                <li><span class="shortcut-key">Enter</span> or <span class="shortcut-key">=</span> Calculate</li>
+                                <li><span class="shortcut-key">Esc</span> Clear All</li>
+                                <li><span class="shortcut-key">Backspace</span> Clear Entry</li>
+                                <li><span class="shortcut-key">H</span> Show History</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-calculator me-2"></i>Scientific Functions</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>sin, cos, tan:</strong> Trigonometric functions</li>
+                                <li><strong>ln, log:</strong> Natural and base-10 logarithm</li>
+                                <li><strong>exp:</strong> Exponential function (e^x)</li>
+                                <li><strong>√:</strong> Square root</li>
+                                <li><strong>x²:</strong> Square</li>
+                                <li><strong>x³:</strong> Cube</li>
+                                <li><strong>x!:</strong> Factorial</li>
+                                <li><strong>1/x:</strong> Reciprocal</li>
+                                <li><strong>π, e:</strong> Mathematical constants</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6><i class="fas fa-cog me-2"></i>Features</h6>
+                            <ul>
+                                <li><strong>Theme switching:</strong> Toggle between White, Dark, and Gray themes</li>
+                                <li><strong>Zoom controls:</strong> Use + and - buttons to adjust screen zoom</li>
+                                <li><strong>History:</strong> View and reuse previous calculations</li>
+                                <li><strong>Angle modes:</strong> Switch between Degrees and Radians</li>
+                                <li><strong>Error handling:</strong> Invalid operations show error messages</li>
+                                <li><strong>Responsive design:</strong> Works on desktop and mobile devices</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Zoom Manager
+        class ZoomManager {
+            constructor() {
+                this.zoomLevel = 1;
+                this.minZoom = 0.5;
+                this.maxZoom = 2;
+                this.zoomStep = 0.1;
+                this.updateDisplay();
+            }
+
+            zoomIn() {
+                if (this.zoomLevel < this.maxZoom) {
+                    this.zoomLevel += this.zoomStep;
+                    this.applyZoom();
+                    this.updateDisplay();
+                    themeManager.showNotification(`Zoom: ${Math.round(this.zoomLevel * 100)}%`);
+                }
+            }
+
+            zoomOut() {
+                if (this.zoomLevel > this.minZoom) {
+                    this.zoomLevel -= this.zoomStep;
+                    this.applyZoom();
+                    this.updateDisplay();
+                    themeManager.showNotification(`Zoom: ${Math.round(this.zoomLevel * 100)}%`);
+                }
+            }
+
+            applyZoom() {
+                document.body.style.zoom = this.zoomLevel;
+            }
+
+            updateDisplay() {
+                document.getElementById('zoomLevel').textContent = Math.round(this.zoomLevel * 100) + '%';
+            }
+        }
+
+        // Theme Manager
+        class ThemeManager {
+            constructor() {
+                this.themes = ['white', 'dark', 'gray'];
+                this.currentTheme = 0;
+                this.loadTheme();
+            }
+
+            cycleTheme() {
+                this.currentTheme = (this.currentTheme + 1) % this.themes.length;
+                const theme = this.themes[this.currentTheme];
+                document.body.setAttribute('data-theme', theme);
+                this.saveTheme();
+                this.showNotification(`Switched to ${theme} theme`);
+            }
+
+            saveTheme() {
+                const theme = this.themes[this.currentTheme];
+                window.selectedTheme = theme;
+            }
+
+            loadTheme() {
+                const savedTheme = window.selectedTheme || 'white';
+                this.currentTheme = this.themes.indexOf(savedTheme);
+                if (this.currentTheme === -1) this.currentTheme = 0;
+                document.body.setAttribute('data-theme', this.themes[this.currentTheme]);
+            }
+
+            showNotification(message) {
+                document.getElementById('toastMessage').textContent = message;
+                const toast = new bootstrap.Toast(document.getElementById('notificationToast'));
+                toast.show();
+            }
+        }
+
+        // Enhanced Scientific Calculator
+        class ScientificCalculator {
+            constructor() {
+                this.display = document.getElementById('displayMain');
+                this.history = document.getElementById('displayHistory');
+                this.modeIndicator = document.getElementById('modeIndicator');
+                this.errorIndicator = document.getElementById('errorIndicator');
+                
+                this.currentValue = '0';
+                this.previousValue = '';
+                this.operation = '';
+                this.waitingForNumber = false;
+                this.angleMode = 'DEG';
+                this.secondFunction = false;
+                this.lastCalculation = '';
+                this.hasError = false;
+                this.operationHistory = [];
+                
+                this.updateDisplay();
+                this.setupValidation();
+            }
+
+            setupValidation() {
+                this.validationRules = {
+                    number: /^-?\d*\.?\d+$/,
+                    operation: /^[\+\-\×\÷\^]$/,
+                    function: /^(sin|cos|tan|ln|log|exp|sqrt|abs|!)$/
+                };
+            }
+
+            validateInput(input, type) {
+                if (type === 'number') {
+                    return this.validationRules.number.test(input) || input === '0' || input === '';
+                }
+                if (type === 'operation') {
+                    return this.validationRules.operation.test(input);
+                }
+                if (type === 'function') {
+                    return this.validationRules.function.test(input);
+                }
+                return true;
+            }
+
+            inputNumber(num) {
+                if (this.hasError) {
+                    this.clearAll();
+                }
+
+                if (num === '.' && this.currentValue.includes('.')) {
+                    return;
+                }
+
+                if (this.waitingForNumber || this.currentValue === '0') {
+                    this.currentValue = num === '.' ? '0.' : num;
+                    this.waitingForNumber = false;
+                } else {
+                    this.currentValue += num;
+                }
+                
+                this.updateDisplay();
+                this.animateButton();
+            }
+
+            operator(op) {
+                if (this.hasError) {
+                    this.clearAll();
+                }
+
+                if (!this.waitingForNumber && this.previousValue !== '' && this.operation !== '') {
+                    this.calculate();
+                }
+
+                this.previousValue = this.currentValue;
+                this.operation = op;
+                this.waitingForNumber = true;
+                this.updateHistory(`${this.currentValue} ${op}`);
+                this.animateButton();
+            }
+
+            calculate() {
+                if (this.previousValue === '' || this.operation === '' || this.hasError) {
+                    return;
+                }
+
+                let result;
+                const prev = parseFloat(this.previousValue);
+                const current = parseFloat(this.currentValue);
+
+                try {
+                    switch (this.operation) {
+                        case '+':
+                            result = prev + current;
+                            break;
+                        case '-':
+                            result = prev - current;
+                            break;
+                        case '×':
+                            result = prev * current;
+                            break;
+                        case '÷':
+                            if (current === 0) throw new Error('Division by zero');
+                            result = prev / current;
+                            break;
+                        case '^':
+                            result = Math.pow(prev, current);
+                            break;
+                        default:
+                            return;
+                    }
+
+                    if (!isFinite(result)) {
+                        throw new Error('Invalid result');
+                    }
+
+                    this.lastCalculation = `${this.previousValue} ${this.operation} ${this.currentValue} = ${result}`;
+                    this.operationHistory.unshift(this.lastCalculation);
+                    if (this.operationHistory.length > 100) {
+                        this.operationHistory.pop();
+                    }
+
+                    this.currentValue = this.formatResult(result);
+                    this.previousValue = '';
+                    this.operation = '';
+                    this.waitingForNumber = true;
+                    this.updateHistory(this.lastCalculation);
+
+                } catch (error) {
+                    this.showError(error.message);
+                }
+
+                this.updateDisplay();
+                this.animateButton();
+            }
+
+            function(func) {
+                if (this.hasError && func !== 'deg' && func !== '2nd') {
+                    this.clearAll();
+                }
+
+                let result;
+                const current = parseFloat(this.currentValue);
+
+                try {
+                    switch (func) {
+                        case '2nd':
+                            this.secondFunction = !this.secondFunction;
+                            this.updateSecondFunctions();
+                            return;
+                        case 'deg':
+                            this.angleMode = this.angleMode === 'DEG' ? 'RAD' : 'DEG';
+                            this.modeIndicator.textContent = this.angleMode;
+                            themeManager.showNotification(`Switched to ${this.angleMode} mode`);
+                            return;
+                        case 'sin':
+                            result = this.secondFunction ? Math.asin(current) : Math.sin(this.toRadians(current));
+                            break;
+                        case 'cos':
+                            result = this.secondFunction ? Math.acos(current) : Math.cos(this.toRadians(current));
+                            break;
+                        case 'tan':
+                            result = this.secondFunction ? Math.atan(current) : Math.tan(this.toRadians(current));
+                            break;
+                        case 'ln':
+                            if (current <= 0) throw new Error('Invalid input for ln');
+                            result = Math.log(current);
+                            break;
+                        case 'log':
+                            if (current <= 0) throw new Error('Invalid input for log');
+                            result = Math.log10(current);
+                            break;
+                        case 'exp':
+                            result = Math.exp(current);
+                            break;
+                        case 'sqrt':
+                            if (current < 0) throw new Error('Invalid input for sqrt');
+                            result = Math.sqrt(current);
+                            break;
+                        case 'x2':
+                            result = current * current;
+                            break;
+                        case 'x3':
+                            result = current * current * current;
+                            break;
+                        case '10^x':
+                            result = Math.pow(10, current);
+                            break;
+                        case '!':
+                            if (current < 0 || current !== Math.floor(current)) throw new Error('Invalid input for factorial');
+                            result = this.factorial(current);
+                            break;
+                        case '1/x':
+                            if (current === 0) throw new Error('Division by zero');
+                            result = 1 / current;
+                            break;
+                        case 'abs':
+                            result = Math.abs(current);
+                            break;
+                        case 'pi':
+                            this.currentValue = Math.PI.toString();
+                            this.updateDisplay();
+                            return;
+                        case 'e':
+                            this.currentValue = Math.E.toString();
+                            this.updateDisplay();
+                            return;
+                        case '%':
+                            result = current / 100;
+                            break;
+                        case '+/-':
+                            result = -current;
+                            break;
+                        case '(':
+                            this.currentValue += '(';
+                            this.updateDisplay();
+                            return;
+                        case ')':
+                            this.currentValue += ')';
+                            this.updateDisplay();
+                            return;
+                        default:
+                            return;
+                    }
+
+                    if (!isFinite(result)) {
+                        throw new Error('Invalid result');
+                    }
+
+                    this.currentValue = this.formatResult(result);
+                    this.waitingForNumber = true;
+                    this.secondFunction = false;
+                    this.updateSecondFunctions();
+
+                } catch (error) {
+                    this.showError(error.message);
+                }
+
+                this.updateDisplay();
+                this.animateButton();
+            }
+
+            factorial(n) {
+                if (n > 170) throw new Error('Number too large for factorial');
+                if (n === 0 || n === 1) return 1;
+                return n * this.factorial(n - 1);
+            }
+
+            toRadians(degrees) {
+                return this.angleMode === 'DEG' ? degrees * Math.PI / 180 : degrees;
+            }
+
+            toDegrees(radians) {
+                return this.angleMode === 'RAD' ? radians * 180 / Math.PI : radians;
+            }
+
+            formatResult(result) {
+                if (Math.abs(result) > 1e10 || (Math.abs(result) < 1e-6 && result !== 0)) {
+                    return result.toExponential(6);
+                }
+                return parseFloat(result.toPrecision(10)).toString();
+            }
+
+            clearAll() {
+                this.currentValue = '0';
+                this.previousValue = '';
+                this.operation = '';
+                this.waitingForNumber = false;
+                this.hasError = false;
+                this.hideError();
+                this.history.textContent = '';
+                this.updateDisplay();
+                this.animateButton();
+            }
+
+            clearEntry() {
+                this.currentValue = '0';
+                this.hasError = false;
+                this.hideError();
+                this.updateDisplay();
+                this.animateButton();
+            }
+
+            updateDisplay() {
+                this.display.textContent = this.currentValue;
+            }
+
+            updateHistory(text) {
+                this.history.textContent = text;
+            }
+
+            updateSecondFunctions() {
+                // Visual indicator for second functions could be added here
+            }
+
+            showError(message) {
+                this.hasError = true;
+                this.currentValue = 'Error';
+                this.errorIndicator.classList.add('show');
+                themeManager.showNotification(`Error: ${message}`);
+                setTimeout(() => this.hideError(), 3000);
+            }
+
+            hideError() {
+                this.errorIndicator.classList.remove('show');
+            }
+
+            animateButton() {
+                // Button press animation would be handled by CSS
+            }
+
+            clearHistory() {
+                this.operationHistory = [];
+                this.updateHistoryModal();
+                themeManager.showNotification('History cleared');
+            }
+
+            updateHistoryModal() {
+                const historyList = document.getElementById('historyList');
+                const historyCount = document.getElementById('historyCount');
+                
+                if (this.operationHistory.length === 0) {
+                    historyList.innerHTML = '<p class="text-muted">No calculations yet...</p>';
+                    historyCount.textContent = '0 calculations';
+                } else {
+                    historyList.innerHTML = this.operationHistory
+                        .map(calc => `<div class="history-item" onclick="calculator.loadFromHistory('${calc}')">${calc}</div>`)
+                        .join('');
+                    historyCount.textContent = `${this.operationHistory.length} calculation${this.operationHistory.length !== 1 ? 's' : ''}`;
+                }
+            }
+
+            loadFromHistory(calculation) {
+                const result = calculation.split(' = ')[1];
+                if (result) {
+                    this.currentValue = result;
+                    this.updateDisplay();
+                    bootstrap.Modal.getInstance(document.getElementById('historyModal')).hide();
+                    themeManager.showNotification('Loaded from history');
+                }
+            }
+        }
+
+        // Initialize everything
+        const zoomManager = new ZoomManager();
+        const themeManager = new ThemeManager();
+        const calculator = new ScientificCalculator();
+
+        // Modal functions
+        function showHistoryModal() {
+            calculator.updateHistoryModal();
+            new bootstrap.Modal(document.getElementById('historyModal')).show();
+        }
+
+        function showHelpModal() {
+            new bootstrap.Modal(document.getElementById('helpModal')).show();
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            e.preventDefault();
+            
+            const key = e.key;
+            
+            if (/[0-9]/.test(key)) {
+                calculator.inputNumber(key);
+            } else if (key === '.') {
+                calculator.inputNumber('.');
+            } else if (key === '+') {
+                calculator.operator('+');
+            } else if (key === '-') {
+                calculator.operator('-');
+            } else if (key === '*') {
+                calculator.operator('×');
+            } else if (key === '/') {
+                calculator.operator('÷');
+            } else if (key === 'Enter' || key === '=') {
+                calculator.calculate();
+            } else if (key === 'Escape') {
+                calculator.clearAll();
+            } else if (key === 'Backspace') {
+                calculator.clearEntry();
+            } else if (key.toLowerCase() === 'h') {
+                showHistoryModal();
+            }
+        });
+
+        // Add button press animations
+        document.querySelectorAll('.calculator-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.add('pressed');
+                setTimeout(() => this.classList.remove('pressed'), 150);
+            });
+        });
+    </script>
+</body>
+</html></parameter>
+</invoke>
